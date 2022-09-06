@@ -1,14 +1,16 @@
 plugins {
     id 'com.android.library'
     id 'com.google.protobuf'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
 
 }
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 26
-        targetSdkVersion 31
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
@@ -44,7 +46,7 @@ android {
         aosp {
             dimension "app"
 //            applicationId 'com.android.ttlauncher3'
-//            testApplicationId 'com.android.launcher3.tests'
+            testApplicationId 'com.android.launcher3.tests'
         }
 
 
@@ -82,9 +84,9 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation "androidx.preference:preference:1.2.0"
     implementation "androidx.slice:slice-builders:1.0.0"
-    implementation project(':IconLoader')
+    implementation project(':Iconloaderlib')
     // Required for AOSP to compile. This is already included in the sysui_shared.jar
-    withoutQuickstepImplementation fileTree(dir: "libs", include: 'plugin_core.jar')
+    api fileTree(dir: "libs", include: 'plugin_core.jar')
 
     implementation 'com.google.protobuf:protobuf-javalite:3.8.0'
     implementation 'com.google.android.material:material:1.5.0'

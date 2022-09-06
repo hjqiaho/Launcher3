@@ -8,19 +8,19 @@ buildscript {
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
     }
     dependencies {
-        classpath GRADLE_CLASS_PATH
-        classpath PROTOBUF_CLASS_PATH
+        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.18'
     }
 }
 
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 26
-        targetSdkVersion 31
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         applicationId 'com.fundot.p4bu'

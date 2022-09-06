@@ -1,3 +1,2 @@
-include ':IconLoader'
-project(':IconLoader').projectDir = new File(rootDir, 'iconloaderlib')
+include ':iconloaderlib'
 include ':launcher312'
