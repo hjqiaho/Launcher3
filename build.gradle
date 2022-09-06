@@ -36,6 +36,13 @@ android {
         debug {
             minifyEnabled false
         }
+        release {
+            lintOptions {
+                abortOnError false
+            }
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
 
     compileOptions {
@@ -72,16 +79,16 @@ android {
     }
 
     // Disable release builds for now
-    android.variantFilter { variant ->
-        if (variant.buildType.name.endsWith('release')) {
-            variant.setIgnore(true)
-        }
-    }
+//    android.variantFilter { variant ->
+//        if (variant.buildType.name.endsWith('release')) {
+//            variant.setIgnore(true)
+//        }
+//    }
 
     sourceSets {
         main {
             res.srcDirs = ['res']
-            java.srcDirs = ['src', 'src_plugins']
+            java.srcDirs = ['src']
             manifest.srcFile 'AndroidManifest-common.xml'
             proto {
                 srcDirs = ['protos/', 'protos_overrides/']

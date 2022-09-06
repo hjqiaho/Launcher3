@@ -70,7 +70,6 @@ import com.android.launcher3.model.BgDataModel.Callbacks;
 import com.android.launcher3.model.ItemInstallQueue;
 import com.android.launcher3.model.ModelUtils;
 import com.android.launcher3.model.ModelWriter;
-import com.android.launcher3.model.WidgetsModel;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.*;
 import com.android.launcher3.notification.NotificationListener;
@@ -2306,7 +2305,7 @@ public class Launcher extends StatefulActivity<LauncherState> implements Launche
                 // The widget id is not valid. Try to find the widget based on the provider info.
                 appWidgetInfo = mAppWidgetManager.findProvider(item.providerName, item.user);
                 if (appWidgetInfo == null) {
-                    if (WidgetsModel.GO_DISABLE_WIDGETS) {
+                    if (true) {
                         removalReason = "widgets are disabled on go device.";
                     } else {
                         removalReason =
