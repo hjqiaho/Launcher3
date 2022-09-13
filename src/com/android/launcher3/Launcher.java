@@ -427,7 +427,8 @@ public class Launcher extends StatefulActivity<LauncherState> implements Launche
     }
 
     protected LauncherOverlayManager getDefaultOverlay() {
-        return new LauncherOverlayManager() { };
+//        return new LauncherOverlayManager() { };
+        return new LauncherTab(this);//cczheng add for overlayscreen
     }
 
     protected OnboardingPrefs createOnboardingPrefs(SharedPreferences sharedPrefs) {
