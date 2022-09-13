@@ -1,7 +1,9 @@
 package com.google.android.libraries.launcherclient;
 
-interface ILauncherOverlayCallback{
-     void overlayScrollChanged(float progress);
+interface ILauncherOverlayCallback {
 
-     void overlayStatusChanged(int status);
+    oneway void overlayScrollChanged(float progress);
+
+    oneway void overlayStatusChanged(int status);
+
 }
