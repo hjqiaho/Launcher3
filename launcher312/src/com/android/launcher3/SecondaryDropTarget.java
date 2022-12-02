@@ -150,6 +150,9 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
         }
 
         setupUi(UNINSTALL);
+        if (LauncherAppState.isForbidLongClick()){
+            return false;
+        }
         Boolean uninstallDisabled = mUninstallDisabledCache.get(info.user);
         if (uninstallDisabled == null) {
             UserManager userManager =

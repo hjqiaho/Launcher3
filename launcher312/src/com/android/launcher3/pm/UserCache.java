@@ -82,7 +82,7 @@ public class UserCache {
         }
     }
 
-    private void enableAndResetCache() {
+    public void enableAndResetCache() {
         synchronized (this) {
             mUsers = new LongSparseArray<>();
             mUserToSerialMap = new ArrayMap<>();

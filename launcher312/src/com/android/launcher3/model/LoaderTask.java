@@ -16,17 +16,21 @@
 
 package com.android.launcher3.model;
 
+import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPLICATION;
 import static com.android.launcher3.config.FeatureFlags.MULTI_DB_GRID_MIRATION_ALGO;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_HAS_SHORTCUT_PERMISSION;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_QUIET_MODE_CHANGE_PERMISSION;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_QUIET_MODE_ENABLED;
 import static com.android.launcher3.model.ModelUtils.filterCurrentWorkspaceItems;
+import static com.android.launcher3.model.data.AppInfo.makeLaunchIntent;
 import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_LOCKED_USER;
 import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SAFEMODE;
 import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_SUSPENDED;
 import static com.android.launcher3.util.Executors.MODEL_EXECUTOR;
 import static com.android.launcher3.util.PackageManagerHelper.hasShortcutsPermission;
 import static com.android.launcher3.util.PackageManagerHelper.isSystemApp;
+
+import static app.lawnchair.LawnchairApp.lawnchairAppDataSource;
 
 import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetProviderInfo;
@@ -50,6 +54,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.LongSparseArray;
+import android.util.Pair;
 import android.util.TimingLogger;
 
 import com.android.launcher3.DeviceProfile;
@@ -140,6 +145,11 @@ public class LoaderTask implements Runnable {
     private boolean mItemsDeleted = false;
     private String mDbName;
 
+    //需要隐藏的应用 系统的加上三方的
+    public static List<String> disabledPackageList = new ArrayList<>();
+    //申请等待审核的应用
+    public static List<String> mWaitApprovalList = new ArrayList<>();
+
     public LoaderTask(LauncherAppState app, AllAppsList bgAllAppsList, BgDataModel dataModel,
             ModelDelegate modelDelegate, LoaderResults results) {
         mApp = app;
@@ -225,6 +235,13 @@ public class LoaderTask implements Runnable {
             List<LauncherActivityInfo> allActivityList = loadAllApps();
             logASplit(logger, "loadAllApps");
 
+            //cczheng add for load all app on workspace
+            if (LauncherAppState.isDisableAllApps()) {
+                android.util.Log.e("Launcher3", "verifyApplications()");
+                verifyApplications();
+            }
+            //end
+
             verifyNotStopped();
             mResults.bindAllApps();
             logASplit(logger, "bindAllApps");
@@ -303,7 +320,46 @@ public class LoaderTask implements Runnable {
         }
         TraceHelper.INSTANCE.endSection(traceToken);
     }
-
+    //cczheng add for load all app on workspace
+    private void verifyApplications() {
+        final Context context = mApp.getContext();
+        ArrayList<Pair<ItemInfo, Object>> installQueue = new ArrayList<>();
+        final List<UserHandle> profiles = mUserManager.getUserProfiles();
+        for (UserHandle user : profiles) {
+            final List<LauncherActivityInfo> apps = mLauncherApps.getActivityList(null, user);
+            android.util.Log.i("Launcher3", "apps.size " + apps.size());
+            ArrayList<ItemInstallQueue.PendingInstallShortcutInfo> added = new ArrayList<ItemInstallQueue.PendingInstallShortcutInfo>();
+            synchronized (this) {
+                for (LauncherActivityInfo app : apps) {
+                    if (mLauncherApps.isActivityEnabled(app.getComponentName(), app.getUser())){
+                        if (LoaderTask.disabledPackageList.contains(app.getComponentName().getPackageName())&&
+                                !LoaderTask.mWaitApprovalList.contains(app.getComponentName().getPackageName())) {
+                            continue;
+                        }
+                        ItemInstallQueue.PendingInstallShortcutInfo pendingInstallShortcutInfo
+                                = new ItemInstallQueue.PendingInstallShortcutInfo(app.getComponentName().getPackageName(), app.getUser());
+                        added.add(pendingInstallShortcutInfo);
+                        final WorkspaceItemInfo si = new WorkspaceItemInfo();
+                        si.user = app.getUser();
+                        si.itemType = ITEM_TYPE_APPLICATION;
+                        si.intent = makeLaunchIntent(app);
+                        LauncherAppState.getInstance(context).getIconCache().getTitleAndIcon(si, () -> app, false, false);
+                        if (LoaderTask.disabledPackageList.contains(si.getTargetComponent().getPackageName()) ||
+                                LoaderTask.mWaitApprovalList.contains(si.getTargetComponent().getPackageName())) {
+                            si.runtimeStatusFlags |= ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE;
+                        }
+                        installQueue.add(Pair.create(si, null));
+                        android.util.Log.d("Launcher3", "app pkg "+app.getComponentName().getPackageName());
+                    }
+                }
+            }
+            if (!added.isEmpty()) {
+                android.util.Log.i("Launcher3", "installQueue.size "+installQueue.size());
+                mApp.getModel().addAndBindAddedWorkspaceItems(installQueue);
+            }
+        }
+    }
+    //end
     public synchronized void stopLocked() {
         mStopped = true;
         this.notify();
@@ -337,12 +393,18 @@ public class LoaderTask implements Runnable {
             // Migration failed. Clear workspace.
             clearDb = true;
         }
-
+        if (lawnchairAppDataSource.getForceClearLauncherDb()) {
+            lawnchairAppDataSource.setForceClearLauncherDb(false);
+            clearDb = true;
+        }
         if (clearDb) {
             Log.d(TAG, "loadWorkspace: resetting launcher database");
             LauncherSettings.Settings.call(contentResolver,
                     LauncherSettings.Settings.METHOD_CREATE_EMPTY_DB);
         }
+
+        disabledPackageList = lawnchairAppDataSource.getDisabledPackageStr();
+        mWaitApprovalList = lawnchairAppDataSource.getWaitApprovalPackages();
 
         Log.d(TAG, "loadWorkspace: loading default favorites");
         LauncherSettings.Settings.call(contentResolver,
@@ -620,7 +682,9 @@ public class LoaderTask implements Runnable {
                                                     PackageInstallInfo.STATUS_INSTALLING);
                                         }
                                 }
-
+                                if (disabledPackageList != null && disabledPackageList.contains(info.getTargetComponent().getPackageName())) {
+                                    info.runtimeStatusFlags |= ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE;
+                                }
                                 c.checkAndAddItem(info, mBgDataModel);
                             } else {
                                 throw new RuntimeException("Unexpected null WorkspaceItemInfo");

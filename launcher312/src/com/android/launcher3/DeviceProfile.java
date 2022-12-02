@@ -566,7 +566,7 @@ public class DeviceProfile {
      */
     public void updateIconSize(float scale, Resources res) {
         // Icon scale should never exceed 1, otherwise pixellation may occur.
-        iconScale = Math.min(1f, scale);
+        iconScale = Math.min(1f, scale) * 1.2f;
         cellScaleToFit = scale;
 
 

@@ -30,6 +30,7 @@ import android.view.View.OnLongClickListener;
 import android.widget.Toast;
 
 import com.android.launcher3.Launcher;
+import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
@@ -128,6 +129,9 @@ public class OptionsPopupView extends ArrowPopup
 
     public static OptionsPopupView show(
             Launcher launcher, RectF targetRect, List<OptionItem> items, boolean shouldAddArrow) {
+        if (LauncherAppState.isForbidLongClick()){
+            return null;
+        }
         return show(launcher, targetRect, items, shouldAddArrow, 0 /* width */);
     }
 

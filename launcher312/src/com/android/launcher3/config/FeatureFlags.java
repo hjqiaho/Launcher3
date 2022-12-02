@@ -52,7 +52,7 @@ public final class FeatureFlags {
      * Enable moving the QSB on the 0th screen of the workspace. This is not a configuration feature
      * and should be modified at a project level.
      */
-    public static final boolean QSB_ON_FIRST_SCREEN = true;
+    public static final boolean QSB_ON_FIRST_SCREEN = false;
 
     /**
      * Feature flag to handle define config changes dynamically instead of killing the process.
@@ -73,7 +73,7 @@ public final class FeatureFlags {
             "Adds a promise icon to the home screen for new install sessions.");
 
     public static final BooleanFlag QUICKSTEP_SPRINGS = getDebugFlag(
-            "QUICKSTEP_SPRINGS", true, "Enable springs for quickstep animations");
+            "QUICKSTEP_SPRINGS", false, "Enable springs for quickstep animations");
 
     public static final BooleanFlag UNSTABLE_SPRINGS = getDebugFlag(
             "UNSTABLE_SPRINGS", false, "Enable unstable springs for quickstep animations");

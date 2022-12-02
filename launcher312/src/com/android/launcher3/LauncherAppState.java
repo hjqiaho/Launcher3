@@ -68,6 +68,21 @@ public class LauncherAppState {
     private final InvariantDeviceProfile mInvariantDeviceProfile;
     private final RunnableList mOnTerminateCallback = new RunnableList();
 
+    //是否隐藏全部应用抽屉功能，隐藏后 所有应用默认显示到主屏幕上 默认true
+    public static boolean isDisableAllApps() {
+        return true;
+    }
+
+    //是否显示负一屏自定义页面  默认 false
+    public static boolean isShowCustomView() {
+        return false;
+    }
+
+    //是否屏幕长按和图标长按  默认 true
+    public static boolean isForbidLongClick() {
+        return true;
+    }
+
     public static LauncherAppState getInstance(final Context context) {
         return INSTANCE.get(context);
     }

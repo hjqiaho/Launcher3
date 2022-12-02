@@ -15,7 +15,9 @@
  */
 package com.android.launcher3.model;
 
+import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPLICATION;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_QUIET_MODE_ENABLED;
+import static com.android.launcher3.model.data.AppInfo.makeLaunchIntent;
 import static com.android.launcher3.model.data.WorkspaceItemInfo.FLAG_AUTOINSTALL_ICON;
 import static com.android.launcher3.model.data.WorkspaceItemInfo.FLAG_RESTORED_ICON;
 
@@ -28,6 +30,7 @@ import android.content.pm.ShortcutInfo;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Log;
+import android.util.Pair;
 
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherAppState;
@@ -38,7 +41,9 @@ import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.IconCache;
 import com.android.launcher3.icons.LauncherIcons;
 import com.android.launcher3.logging.FileLog;
+import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.pm.PackageInstallInfo;
@@ -79,6 +84,7 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
     private final int mOp;
     private final UserHandle mUser;
     private final String[] mPackages;
+    private LauncherApps mLauncherApps;
 
     public PackageUpdatedTask(int op, UserHandle user, String... packages) {
         mOp = op;
@@ -90,6 +96,7 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
     public void execute(LauncherAppState app, BgDataModel dataModel, AllAppsList appsList) {
         final Context context = app.getContext();
         final IconCache iconCache = app.getIconCache();
+        mLauncherApps = app.getContext().getSystemService(LauncherApps.class);
 
         final String[] packages = mPackages;
         final int N = packages.length;
@@ -358,8 +365,58 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
             }
             bindUpdatedWidgets(dataModel);
         }
+        //cczheng add for load new install app on workspace
+        if (LauncherAppState.isDisableAllApps()) {
+            android.util.Log.e("cczLauncher3", "updateToWorkSpace()");
+            updateToWorkSpace(context, app, appsList);
+        }//end
     }
+    //cczheng add for load new install app on workspace
+    public void updateToWorkSpace(Context context, LauncherAppState app , AllAppsList appsList){
+        ArrayList<Pair<ItemInfo, Object>> installQueue = new ArrayList<>();
+        // final List<UserHandle> profiles = UserManagerCompat.getInstance(context).getUserProfiles();
+        UserManager mUserManager = context.getSystemService(UserManager.class);
+        LauncherApps launcherApps = context.getSystemService(LauncherApps.class);
+        final List<UserHandle> profiles = mUserManager.getUserProfiles();
+        ArrayList<ItemInstallQueue.PendingInstallShortcutInfo> added
+                = new ArrayList<ItemInstallQueue.PendingInstallShortcutInfo>();
 
+        for (UserHandle user : profiles) {
+            // final List<LauncherActivityInfo> apps = LauncherAppsCompat.getInstance(context).getActivityList(null, user);
+            final List<LauncherActivityInfo> apps = launcherApps.getActivityList(null, user);
+            synchronized (this) {
+                for (LauncherActivityInfo info : apps) {
+                    for (AppInfo appInfo : appsList.data) {
+                        if(info.getComponentName().equals(appInfo.componentName)){
+                            if (mLauncherApps.isActivityEnabled(appInfo.componentName, appInfo.user)) {
+                                if (LoaderTask.disabledPackageList.contains(info.getComponentName().getPackageName())&&
+                                        !LoaderTask.mWaitApprovalList.contains(info.getComponentName().getPackageName())) {
+                                    continue;
+                                }
+                                ItemInstallQueue.PendingInstallShortcutInfo mPendingInstallShortcutInfo
+                                        =  new ItemInstallQueue.PendingInstallShortcutInfo(info.getComponentName().getPackageName(), info.getUser());
+                                added.add(mPendingInstallShortcutInfo);
+                                final WorkspaceItemInfo si = new WorkspaceItemInfo();
+                                si.user = info.getUser();
+                                si.itemType = ITEM_TYPE_APPLICATION;
+                                si.intent = makeLaunchIntent(info);
+                                LauncherAppState.getInstance(context).getIconCache().getTitleAndIcon(si, () -> info, false, false);
+                                if (LoaderTask.disabledPackageList.contains(si.getTargetComponent().getPackageName()) ||
+                                        LoaderTask.mWaitApprovalList.contains(si.getTargetComponent().getPackageName())) {
+                                    si.runtimeStatusFlags |= ItemInfoWithIcon.FLAG_DISABLED_NOT_AVAILABLE;
+                                }
+                                installQueue.add(Pair.create(si, null));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (!added.isEmpty()) {
+            app.getModel().addAndBindAddedWorkspaceItems(installQueue);
+        }
+    }
+    //end
     /**
      * Updates {@param si}'s intent to point to a new ComponentName.
      * @return Whether the shortcut intent was changed.
