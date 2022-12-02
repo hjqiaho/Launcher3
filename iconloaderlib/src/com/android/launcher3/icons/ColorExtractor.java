@@ -84,7 +84,9 @@ public class ColorExtractor {
                     continue;
                 }
                 if (pixelCount < samples) {
-                    pixels[pixelCount++] = rgb;
+                    if (pixelCount<pixels.length-1){
+                        pixels[pixelCount++] = rgb;
+                    }
                 }
                 float score = hsv[1] * hsv[2];
                 hueScoreHistogram[hue] += score;
