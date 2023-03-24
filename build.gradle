@@ -36,19 +36,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-
-    sourceSets {
-        main {
-            res.srcDirs = ['res']
-            java.srcDirs = ['src', 'src_plugins','src_flags', 'src_shortcuts_overrides','src_ui_overrides']
-            manifest.srcFile 'AndroidManifest-common.xml'
-            proto {
-                srcDir 'protos/'
-                srcDir 'proto_overrides/'
-            }
-        }
-    }
 }
 
 repositories {
@@ -57,34 +44,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.0'
-    implementation 'androidx.preference:preference:1.1.1'
-    implementation project(':IconLoader')
-    implementation fileTree(dir: "prebuilts/libs", include: 'launcher_protos.jar')
-    compileOnly files('prebuilts/libs/framework.jar')
+    implementation project(':iconloaderlib10')
+    implementation project(':launcher310')
 
-    implementation fileTree(dir: "prebuilts/libs", include: 'plugin_core.jar')
-
-}
-
-protobuf {
-    // Configure the protoc executable
-    protoc {
-        artifact = 'com.google.protobuf:protoc:3.0.0-alpha-3'
-
-        generateProtoTasks {
-            all().each { task ->
-                task.builtins {
-                    remove java
-                    javanano {
-                        option "java_package=launcher_log_extension.proto|com.android.launcher3.userevent.nano"
-                        option "java_package=launcher_log.proto|com.android.launcher3.userevent.nano"
-                        option "java_package=launcher_dump.proto|com.android.launcher3.model.nano"
-                        option "enum_style=java"
-                    }
-                }
-            }
-        }
-    }
 }
