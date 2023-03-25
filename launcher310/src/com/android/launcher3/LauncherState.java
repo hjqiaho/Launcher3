@@ -56,6 +56,7 @@ import java.util.Arrays;
  */
 public class LauncherState {
 
+    public static final int FLAG_NON_INTERACTIVE = 1 << 0;
 
     /**
      * Set of elements indicating various workspace elements which change visibility across states

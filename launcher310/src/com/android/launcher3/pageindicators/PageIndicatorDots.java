@@ -23,6 +23,8 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Outline;
 import android.graphics.Paint;
@@ -41,9 +43,11 @@ import android.widget.FrameLayout;
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.Insettable;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.LauncherTab;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.util.Themes;
+import com.google.android.libraries.launcherclient.LauncherClient;
 
 /**
  * {@link PageIndicator} which shows dots per page. The active page is shown with the current
@@ -245,7 +249,7 @@ public class PageIndicatorDots extends View implements PageIndicator, Insettable
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Add extra spacing of mDotRadius on all sides so than entry animation could be run.
         int width = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY ?
-                MeasureSpec.getSize(widthMeasureSpec) : (int) ((mNumPages * 3 + 2) * mDotRadius);
+                MeasureSpec.getSize(widthMeasureSpec) : (int) (((mNumPages * 3 + 2) * mDotRadius) +50);
         int height= MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY ?
                 MeasureSpec.getSize(heightMeasureSpec) : (int) (4 * mDotRadius);
         setMeasuredDimension(width, height);
@@ -254,6 +258,19 @@ public class PageIndicatorDots extends View implements PageIndicator, Insettable
     @Override
     protected void onDraw(Canvas canvas) {
         // Draw all page indicators;
+        LauncherClient launcherClient = ((LauncherTab) mLauncher.getDefaultOverlay()).getClient();
+        if (launcherClient.hasOverlayContent()){
+            // 从资源文件中生成位图
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.icon_dengpao);
+            int mBitWidth = bitmap.getWidth();
+            int mBitHeight = bitmap.getHeight();
+
+            Rect mSrcRect = new Rect(0, 0, mBitWidth, mBitHeight);
+            int left = 0;
+            int top = getHeight()/2 - mBitHeight / 2;
+            Rect mDestRect = new Rect(left, top, left + mBitWidth, top + mBitHeight);
+            canvas.drawBitmap(bitmap,mSrcRect,mDestRect,new Paint());
+        }
         float circleGap = 3 * mDotRadius;
         float startX = (getWidth() - mNumPages * circleGap + mDotRadius) / 2;
 
