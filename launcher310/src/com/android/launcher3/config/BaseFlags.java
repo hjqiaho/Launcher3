@@ -57,6 +57,8 @@ abstract class BaseFlags {
         throw new UnsupportedOperationException("Don't instantiate BaseFlags");
     }
 
+    public static final boolean REMOVE_DRAWER = true;
+
     public static boolean showFlagTogglerUi(Context context) {
         return Utilities.IS_DEBUG_DEVICE && Utilities.isDevelopersOptionsEnabled(context);
     }

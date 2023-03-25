@@ -15,13 +15,19 @@
  */
 package com.android.launcher3.model;
 
+import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPLICATION;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.LauncherActivityInfo;
+import android.content.pm.LauncherApps;
 import android.content.pm.ShortcutInfo;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.util.Log;
+import android.util.Pair;
 
 import com.android.launcher3.AllAppsList;
 import com.android.launcher3.AppInfo;
@@ -155,6 +161,11 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
 
         final ArrayList<AppInfo> addedOrModified = new ArrayList<>();
         addedOrModified.addAll(appsList.added);
+        //add by yy
+        if(FeatureFlags.REMOVE_DRAWER){
+            updateToWorkSpace(context, app, appsList);
+        }
+        //end add by yy
         appsList.added.clear();
         addedOrModified.addAll(appsList.modified);
         appsList.modified.clear();
@@ -349,6 +360,32 @@ public class PackageUpdatedTask extends BaseModelUpdateTask {
                 dataModel.widgetsModel.update(app, new PackageUserKey(packages[i], mUser));
             }
             bindUpdatedWidgets(dataModel);
+        }
+    }
+    private void updateToWorkSpace(Context context,LauncherAppState app,AllAppsList appsList) {
+        ArrayList<Pair<ItemInfo,Object>> installQueue = new ArrayList<>();
+        UserManager mUserManager =context.getSystemService(UserManager.class);
+        final List<UserHandle> profiles =mUserManager.getUserProfiles();
+        LauncherApps mLauncherApps=context.getSystemService(LauncherApps.class);
+        for (UserHandle user : profiles) {
+            final List<LauncherActivityInfo> apps = mLauncherApps.getActivityList(null,user);
+            ArrayList<InstallShortcutReceiver.PendingInstallShortcutInfo>added = new ArrayList<InstallShortcutReceiver.PendingInstallShortcutInfo>();
+            synchronized (this) {
+                for (LauncherActivityInfo info: apps) {
+                    for (AppInfo appInfo :appsList.data) {
+                        String packageName =info.getComponentName().getPackageName();
+                        if(info.getComponentName().equals(appInfo.componentName)){
+                            android.util.Log.i("yantao","package add  packageName =" +packageName);
+                            InstallShortcutReceiver.PendingInstallShortcutInfo pendingInstallShortcutInfo = new InstallShortcutReceiver.PendingInstallShortcutInfo(info, context);
+                            added.add(pendingInstallShortcutInfo);
+                            installQueue.add(pendingInstallShortcutInfo.getItemInfo());
+                        }
+                    }
+                }
+            }
+            if (!added.isEmpty()) {
+                app.getModel().addAndBindAddedWorkspaceItems(installQueue);
+            }
         }
     }
 
