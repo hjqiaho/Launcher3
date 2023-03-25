@@ -51,24 +51,25 @@
     name in the permissions. eq com.mypackage.permission.READ_SETTINGS
     -->
     <permission
-        android:name="${packageName}.permission.READ_SETTINGS"
+        android:name="${applicationId}.permission.READ_SETTINGS"
         android:permissionGroup="android.permission-group.SYSTEM_TOOLS"
         android:protectionLevel="signatureOrSystem"
         android:label="@string/permlab_read_settings"
         android:description="@string/permdesc_read_settings"/>
     <permission
-        android:name="${packageName}.permission.WRITE_SETTINGS"
+        android:name="${applicationId}.permission.WRITE_SETTINGS"
         android:permissionGroup="android.permission-group.SYSTEM_TOOLS"
         android:protectionLevel="signatureOrSystem"
         android:label="@string/permlab_write_settings"
         android:description="@string/permdesc_write_settings"/>
 
-    <uses-permission android:name="${packageName}.permission.READ_SETTINGS" />
-    <uses-permission android:name="${packageName}.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="${applicationId}.permission.READ_SETTINGS" />
+    <uses-permission android:name="${applicationId}.permission.WRITE_SETTINGS" />
 
     <application
-        android:backupAgent="com.android.launcher3.LauncherBackupAgent"
+        android:backupAgent="app.lawnchair.LawnchairApp"
         android:fullBackupOnly="true"
+        android:backupInForeground="true"
         android:fullBackupContent="@xml/backupscheme"
         android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher_home"
@@ -79,16 +80,19 @@
         android:supportsRtl="true" >
 
         <activity
-            android:name="com.android.launcher3.Launcher"
+            android:name="app.lawnchair.LawnchairLauncher"
             android:launchMode="singleTask"
             android:clearTaskOnLaunch="true"
             android:stateNotNeeded="true"
             android:windowSoftInputMode="adjustPan"
             android:screenOrientation="unspecified"
-            android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenSize|screenLayout|smallestScreenSize"
+            android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenSize|screenLayout|smallestScreenSize|density"
             android:resizeableActivity="true"
             android:resumeWhilePausing="true"
+            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
             android:taskAffinity=""
+            android:exported="true"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -100,7 +104,7 @@
             </intent-filter>
             <meta-data
                 android:name="com.android.launcher3.grid.control"
-                android:value="${packageName}.grid_control" />
+                android:value="${applicationId}.grid_control" />
         </activity>
 
         <!-- Intent received used to install shortcuts from other applications -->
@@ -136,12 +140,7 @@
 
         <service
             android:name="com.android.launcher3.notification.NotificationListener"
-            android:label="@string/notification_dots_service_title"
-            android:enabled="@bool/notification_dots_enabled"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
+            android:exported="true">
         </service>
 
         <meta-data android:name="android.nfc.disable_beam_default"
@@ -173,10 +172,10 @@
         -->
         <provider
             android:name="com.android.launcher3.LauncherProvider"
-            android:authorities="${packageName}.settings"
+            android:authorities="${applicationId}.settings"
             android:exported="true"
-            android:writePermission="${packageName}.permission.WRITE_SETTINGS"
-            android:readPermission="${packageName}.permission.READ_SETTINGS" />
+            android:writePermission="${applicationId}.permission.WRITE_SETTINGS"
+            android:readPermission="${applicationId}.permission.READ_SETTINGS" />
 
         <!--
         The content provider for exposing various launcher grid options.
@@ -184,7 +183,7 @@
         -->
         <provider
             android:name="com.android.launcher3.graphics.GridOptionsProvider"
-            android:authorities="${packageName}.grid_control"
+            android:authorities="${applicationId}.grid_control"
             android:enabled="false"
             android:exported="true" />
 
@@ -195,6 +194,7 @@
             android:name="com.android.launcher3.settings.SettingsActivity"
             android:label="@string/settings_button_text"
             android:theme="@android:style/Theme.DeviceDefault.Settings"
+            android:excludeFromRecents="true"
             android:autoRemoveFromRecents="true">
             <intent-filter>
 <!--                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />-->
@@ -204,7 +204,7 @@
 
         <provider
             android:name="com.android.launcher3.testing.TestInformationProvider"
-            android:authorities="${packageName}.TestInfo"
+            android:authorities="${applicationId}.TestInfo"
             android:readPermission="android.permission.WRITE_SECURE_SETTINGS"
             android:writePermission="android.permission.WRITE_SECURE_SETTINGS"
             android:exported="true"

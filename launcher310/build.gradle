@@ -1,8 +1,11 @@
-apply plugin: 'com.android.library'
-apply plugin: 'com.google.protobuf'
-
+plugins {
+    id 'com.android.library'
+    id 'com.google.protobuf'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
+}
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 23
@@ -12,6 +15,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        buildConfigField "String", "APPLICATION_ID", "\"com.fundot.p4bu\""
     }
     buildTypes {
         debug {
@@ -56,6 +60,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.1'
     implementation project(':iconloaderlib10')
     implementation fileTree(dir: "prebuilts/libs", include: 'launcher_protos.jar')
+    implementation 'androidx.core:core:1.8.0'
     compileOnly files('prebuilts/libs/framework.jar')
 
     implementation fileTree(dir: "prebuilts/libs", include: 'plugin_core.jar')

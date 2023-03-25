@@ -1,27 +1,33 @@
 buildscript {
+    ext {
+        kotlin_version = '1.5.20'
+    }
     repositories {
         mavenCentral()
         google()
         jcenter()
     }
     dependencies {
-        classpath GRADLE_CLASS_PATH
-        classpath PROTOBUF_CLASS_PATH
+        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-        applicationId 'com.android.mxlauncher3'
+        applicationId 'com.fundot.p4bu'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -46,5 +52,6 @@ repositories {
 dependencies {
     implementation project(':iconloaderlib10')
     implementation project(':launcher310')
+    implementation 'androidx.core:core:1.8.0'
 
 }
