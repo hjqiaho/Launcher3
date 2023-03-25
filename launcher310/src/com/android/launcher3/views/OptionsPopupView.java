@@ -122,6 +122,9 @@ public class OptionsPopupView extends ArrowPopup
     }
 
     public static void show(Launcher launcher, RectF targetRect, List<OptionItem> items) {
+        if (FeatureFlags.REMOVE_DRAWER){
+            return;
+        }
         OptionsPopupView popup = (OptionsPopupView) launcher.getLayoutInflater()
                 .inflate(R.layout.longpress_options_menu, launcher.getDragLayer(), false);
         popup.mTargetRect = targetRect;

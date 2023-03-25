@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.android.launcher3.Launcher.OnResumeCallback;
 import com.android.launcher3.compat.LauncherAppsCompat;
+import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.dragndrop.DragOptions;
 import com.android.launcher3.logging.LoggerUtils;
 import com.android.launcher3.userevent.nano.LauncherLogProto.ControlType;
@@ -119,6 +120,9 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
         }
 
         setupUi(UNINSTALL);
+        if (FeatureFlags.REMOVE_DRAWER){
+            return false;
+        }
         Boolean uninstallDisabled = mUninstallDisabledCache.get(info.user);
         if (uninstallDisabled == null) {
             UserManager userManager =

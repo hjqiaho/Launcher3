@@ -35,10 +35,12 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.android.launcher3.AbstractFloatingView;
+import com.android.launcher3.DeleteDropTarget;
 import com.android.launcher3.DragSource;
 import com.android.launcher3.DropTarget;
 import com.android.launcher3.ItemInfo;
 import com.android.launcher3.Launcher;
+import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.R;
 import com.android.launcher3.WorkspaceItemInfo;
 import com.android.launcher3.accessibility.DragViewStateAnnouncer;
@@ -635,11 +637,18 @@ public class DragController implements DragDriver.EventListener, TouchController
                     dropTarget.onDrop(mDragObject, mOptions);
                 }
                 accepted = true;
+                if (dropTarget instanceof DeleteDropTarget && isNeedCancelDrag(mDragObject.dragInfo)) {
+                    cancelDrag();
+                }
             }
         }
         final View dropTargetAsView = dropTarget instanceof View ? (View) dropTarget : null;
         mLauncher.getUserEventDispatcher().logDragNDrop(mDragObject, dropTargetAsView);
         dispatchDropComplete(dropTargetAsView, accepted);
+    }
+    private boolean isNeedCancelDrag(ItemInfo item){
+        return (item.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
+                item.itemType == LauncherSettings.Favorites.ITEM_TYPE_FOLDER);
     }
 
     private DropTarget findDropTarget(int x, int y, int[] dropCoordinates) {

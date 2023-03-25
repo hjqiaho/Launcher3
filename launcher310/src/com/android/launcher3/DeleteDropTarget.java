@@ -89,7 +89,7 @@ public class DeleteDropTarget extends ButtonDropTarget {
      */
     private void setTextBasedOnDragSource(ItemInfo item) {
         if (!TextUtils.isEmpty(mText)) {
-            mText = getResources().getString(canRemove(item)
+            mText = getResources().getString(isCanDrop(item)
                     ? R.string.remove_drop_target_label
                     : android.R.string.cancel);
             setContentDescription(mText);
@@ -100,12 +100,15 @@ public class DeleteDropTarget extends ButtonDropTarget {
     private boolean canRemove(ItemInfo item) {
         return item.id != ItemInfo.NO_ID;
     }
-
+    private boolean isCanDrop(ItemInfo item){
+        return !(item.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
+                item.itemType == LauncherSettings.Favorites.ITEM_TYPE_FOLDER);
+    }
     /**
      * Set mControlType depending on the drag item.
      */
     private void setControlTypeBasedOnDragSource(ItemInfo item) {
-        mControlType = item.id != ItemInfo.NO_ID ? ControlType.REMOVE_TARGET
+        mControlType = isCanDrop(item) ? ControlType.REMOVE_TARGET
                 : ControlType.CANCEL_TARGET;
     }
 
@@ -128,8 +131,10 @@ public class DeleteDropTarget extends ButtonDropTarget {
                 modelWriter.abortDelete(itemPage);
                 mLauncher.getUserEventDispatcher().logActionOnControl(TAP, UNDO);
             };
-            Snackbar.show(mLauncher, R.string.item_removed, R.string.undo,
-                    modelWriter::commitDelete, onUndoClicked);
+            if (isCanDrop(item)){
+                Snackbar.show(mLauncher, R.string.item_removed, R.string.undo,
+                        modelWriter::commitDelete, onUndoClicked);
+            }
         }
     }
 
@@ -141,10 +146,12 @@ public class DeleteDropTarget extends ButtonDropTarget {
         // Remove the item from launcher and the db, we can ignore the containerInfo in this call
         // because we already remove the drag view from the folder (if the drag originated from
         // a folder) in Folder.beginDrag()
-        mLauncher.removeItem(view, item, true /* deleteFromDb */);
-        mLauncher.getWorkspace().stripEmptyScreens();
-        mLauncher.getDragLayer()
-                .announceForAccessibility(getContext().getString(R.string.item_removed));
+        if (isCanDrop(item)){
+            mLauncher.removeItem(view, item, true /* deleteFromDb */);
+            mLauncher.getWorkspace().stripEmptyScreens();
+            mLauncher.getDragLayer()
+                    .announceForAccessibility(getContext().getString(R.string.item_removed));
+        }
     }
 
     @Override
