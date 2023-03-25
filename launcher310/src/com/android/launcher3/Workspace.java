@@ -501,7 +501,7 @@ public class Workspace extends PagedView<PageIndicatorDots>
             return;
         }
         // Add the first page
-        CellLayout firstPage = insertNewWorkspaceScreen(Workspace.FIRST_SCREEN_ID, 0);
+//        CellLayout firstPage = insertNewWorkspaceScreen(Workspace.FIRST_SCREEN_ID, 0);
         // Always add a QSB on the first screen.
 //        if (qsb == null) {
 //            // In transposed layout, we add the QSB in the Grid. As workspace does not touch the

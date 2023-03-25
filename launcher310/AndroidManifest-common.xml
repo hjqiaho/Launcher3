@@ -197,7 +197,7 @@
             android:theme="@android:style/Theme.DeviceDefault.Settings"
             android:autoRemoveFromRecents="true">
             <intent-filter>
-                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+<!--                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />-->
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
